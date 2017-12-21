@@ -1,0 +1,102 @@
+---
+title: "Random thoughts about detailed vs. aggregate data"
+output: pdf_document
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(
+    echo = TRUE
+  , eval = TRUE
+)
+library(tidyverse)
+```
+
+Let's simulate some random claims. I'm going to hack my `imaginator` package a bit. I'll use the `SimulatePolicies()` function to generate 10,000 random dates between 2011 and 2020, i.e. 10 years and 1,000 records per year. I'll change the column names so that the date is now regarded as an occurrence date and the record id now says `ClaimID`.
+
+```{r}
+tblClaim <- imaginator::SimulatePolicies(
+    1000
+  , PolicyYears = 2011:2020
+  , Retention = 1
+  , Growth = 0) %>%
+  select(ClaimID = PolicyholderID, OccurrenceDate = PolicyEffectiveDate)
+```
+
+I'll take that data and add a column for indemnity which is distributed poisson with $\lambda=100$. I'll construct a time index which is roughly equal to time in years from January 1, 2011. Then I apply fixed inflation of 5% to all claims. I convert the inflated indemnity amounts to integer so that I don't have to see the warnings I'll get later when I run a poisson GLM.
+
+```{r }
+tblClaim <- tblClaim %>%
+  mutate(
+      Indemnity = rpois(n(), 100)
+    , t = as.double((OccurrenceDate - as.Date('2011-01-01')) / 365.25)
+    , inflation = 1.05 ^ t
+    , Indemnity = as.integer(Indemnity * inflation)
+  )
+```
+
+Here are the first few records in the table:
+
+```{r echo=FALSE, results='asis'}
+tblClaim %>% 
+  head(5) %>% 
+  knitr::kable()
+```
+
+And here's what it looks like when we plot it.
+
+```{r}
+tblClaim %>% 
+  ggplot(aes(OccurrenceDate, Indemnity)) +
+  geom_point(alpha = 0.2) + 
+  geom_smooth(method = 'glm', formula = y ~ 1 + x, method.args = list(family = poisson(link = 'log')))
+```
+
+Now I'm going to aggregate this data by accident year and take the mean.
+
+```{r }
+tblAY <- tblClaim %>%
+      mutate(
+          AY = lubridate::year(OccurrenceDate)
+        , AY_Index = AY - min(AY)) %>%
+      group_by(AY_Index) %>%
+      summarize(
+        MeanIndemnity = as.integer(mean(Indemnity))
+      )
+```
+
+Plotting that data, we can immediately see that the fit line has a wider confidence interval.
+
+```{r}
+tblAY %>% 
+  ggplot(aes(AY_Index, MeanIndemnity)) +
+  geom_point() + 
+  geom_smooth(method = 'glm', formula = y ~ 1 + x, method.args = list(family = poisson(link = 'log')))
+```
+
+A model fit confirms that the standard error around the inflation parameter is smaller for the model with individual claim data.
+
+```{r}
+fit_detail <- glm(Indemnity ~ 1 + t, data = tblClaim, family = poisson(link = "log"))
+summary(fit_detail)
+```
+
+```{r}
+fit_agg_pois <- glm(MeanIndemnity ~ 1 + AY_Index, data = tblAY, family = poisson(link = 'log'))
+summary(fit_agg_pois)
+```
+
+Just for kicks, we'll mimic the `LOGEST()` function from Excel.
+
+```{r }
+fit_agg_lm <- lm(log(MeanIndemnity) ~ 1 + AY_Index, data = tblAY)
+summary(fit_agg_lm)
+```
+
+The fit's not too bad, at least in capturing the first moment of the inflation coefficient. Do note, though, that an aggregate treatment fails to recognize the heteroskedasticity that appears in the detail plot. A Breusch-Pagan test gives a result that is not significant.
+
+```{r}
+library(lmtest)
+lmtest::bptest(fit_agg_lm)
+```
+
+Don't get me wrong, both models fit very well. However, this is largely due to the fact that we have a deterministic inflation parameter. Note, though, that even in this very stable scenario, the aggregate approach has greater uncertainty around our forecast of claim inflation. The consequent capital implications are obvious.
