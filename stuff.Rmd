@@ -27,7 +27,7 @@ I'll take that data and add a column for indemnity which is distributed poisson 
 ```{r }
 tblClaim <- tblClaim %>%
   mutate(
-      Indemnity = rpois(n(), 100)
+      Indemnity = rpois(n(), 10)
     , t = as.double((OccurrenceDate - as.Date('2011-01-01')) / 365.25)
     , inflation = 1.05 ^ t
     , Indemnity = as.integer(Indemnity * inflation)
@@ -61,6 +61,7 @@ tblAY <- tblClaim %>%
       group_by(AY_Index) %>%
       summarize(
         MeanIndemnity = as.integer(mean(Indemnity))
+        , NumClaims = n()
       )
 ```
 
@@ -83,6 +84,24 @@ summary(fit_detail)
 ```{r}
 fit_agg_pois <- glm(MeanIndemnity ~ 1 + AY_Index, data = tblAY, family = poisson(link = 'log'))
 summary(fit_agg_pois)
+```
+
+Per a comment made by Shira Jacobson, try weighted regression.
+
+```{r }
+fit_agg_pois_wtd <- glm(MeanIndemnity ~ 1 + AY_Index, data = tblAY, family = poisson(link = 'log'), weights = NumClaims)
+summary(fit_agg_pois_wtd)
+```
+
+Or, try using the number of claims as an offset, as (probably) Curtis Gary Dean suggests in "Predictive Modeling Applications in Actuarial Science", section 5.6.2.2.
+
+```{r }
+fit_agg_pois_offset <- glm(
+    MeanIndemnity ~ 1 + AY_Index
+  , data = tblAY
+  , family = poisson(link = 'log')
+  , offset = NumClaims)
+summary(fit_agg_pois_offset)
 ```
 
 Just for kicks, we'll mimic the `LOGEST()` function from Excel.
