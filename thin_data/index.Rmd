@@ -1,0 +1,82 @@
+---
+title: Thin Data
+output: 
+  revealjs::revealjs_presentation:
+    theme: black
+    transition: none
+    center: false
+---
+
+```{r include = FALSE}
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+
+knitr::opts_chunk$set(
+    echo = FALSE
+  , warning = FALSE
+)
+```
+
+# What is thin data? 
+
+## What is thin data
+
+Thin data is everything that big data isn't.
+
+Thin data is:
+
+- Collected rarely (quarterly, annually)
+- Short (fewer than 50 observations)
+- Possibly wide (overspecified)
+
+##
+
+##
+
+##
+
+# Mitigation
+
+## Mitigation
+
+```{r }
+tribble(
+    ~Method, ~Description
+  , 'Case control study', 'Identify exemplary cases and work backwords'
+  , 'Bootstrap', 'Sample with replacement'
+  , 'Bayes', 'Alter a distribution based on data and prior judgment'
+  , 'Penalized regression', 'Restrict the number and/or influence of parameters') %>% 
+  kable() %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+# Case control study
+
+## CCS
+
+Stuff
+
+# Bootstrap
+
+## Bootstrap
+
+Stuff
+
+# Bayes
+
+## Bayes
+
+Mama weer all Bayezee now
+
+# Penalized regression
+
+## Penalized regresssion
+
+What is the L2 norm
+
+## Lasso
+
+## Ridge
+
+# Conclusion
