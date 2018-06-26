@@ -54,8 +54,17 @@ tribble(
 # Case control study
 
 ## CCS
-
-Stuff
+  Select controls based on characteristics of the observed cases
+  Recognizes that we can't conduct a controlled experiment by splitting a population
+  Used widely in epidemiology, but has also been used in political science, studies of personal bankruptcy
+  Example: Insurance company insolvencies in a limited time frame; we might select controls of similar size and focus
+  
+  *Pros
+    Allows limited causal inferences from a relatively small dataset
+    Full understanding of the limitations of the control group
+  *Cons
+    Bias inherent in control selection
+    Does not allow inferences about population incidence
 
 # Bootstrap
 
@@ -71,12 +80,17 @@ Mama weer all Bayezee now
 
 # Penalized regression
 
+Allows practitioner to set a higher bar for inclusion of parameters and their effect
+Can be used to prevent overfitting to a small dataset
+
 ## Penalized regresssion
 
 What is the L2 norm
 
-## Lasso
+## Lasso - Coefficients penalized linearly
 
-## Ridge
+## Ridge - Coefficients asymptotically approach zero
+
+## Elastic Net - weighted combination of lasso and ridge
 
 # Conclusion
