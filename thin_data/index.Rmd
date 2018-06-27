@@ -30,6 +30,13 @@ Thin data is:
 - Short (fewer than 50 observations)
 - Possibly wide (overspecified)
 
+Reasons for thin data in capital modeling
+
+- Limited number of entities
+- May be limited to public financials
+- Entitites would want to limit availability of details about capital stresses
+- 
+
 ##
 
 ##
@@ -70,7 +77,15 @@ tribble(
 
 ## Bootstrap
 
-Stuff
+Bootstrap methods use resampling from an observed dataset to draw inferences about the sampling dataset
+ 
+Bootstrap methods do assume that the sampling dataset is a good representation of the true underlying process
+
+Allow development of confidence intervals for the sampling dataset
+
+Bootstrap-type methods can also be used to validate models
+  Is the model robust to a different sample from the observed dataset?
+  
 
 # Bayes
 
@@ -80,17 +95,20 @@ Mama weer all Bayezee now
 
 # Penalized regression
 
-Allows practitioner to set a higher bar for inclusion of parameters and their effect
-Can be used to prevent overfitting to a small dataset
+*Standard regression methods can show significance for small effects in a small sample
+*Penalized regression allows practitioner to set a bar for inclusion of parameters and their associated effects
+*Can be used to prevent overfitting to a small dataset
+
 
 ## Penalized regresssion
 
 What is the L2 norm
 
 ## Lasso - Coefficients penalized linearly
-
+  Useful when practitioner wants to simplify model to effects of a certain size
 ## Ridge - Coefficients asymptotically approach zero
+  Useful when goal is to limit magnitude of effects, but maintain all the predictors
 
-## Elastic Net - weighted combination of lasso and ridge
+## Elastic Net - Weighted combination of lasso and ridge
 
 # Conclusion
